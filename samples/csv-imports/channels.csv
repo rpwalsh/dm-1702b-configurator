@@ -1,0 +1,4 @@
+Name,ChannelType,RxFrequencyMHz,TxFrequencyMHz,Power,Bandwidth,AdmitCriteria,ReceiveOnly,ZoneNames,RxTone,TxTone,ColorCode,TimeSlot,ContactName,RxGroupName
+TEST-CH-001,Analog,145.0000,145.0000,Low,Narrow,Always,True,TEST-ZONE-001,,,,,,
+TEST-CH-002,Analog,145.1000,145.1000,Low,Narrow,Always,False,TEST-ZONE-001,,,,,,
+TEST-CH-003,Digital,430.0000,430.0000,Low,Narrow,Always,False,TEST-ZONE-001,,,1,1,TEST-CONTACT-001,TEST-GROUP-001

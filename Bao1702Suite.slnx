@@ -1,0 +1,14 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Bao1702.Cli/Bao1702.Cli.csproj" />
+    <Project Path="src/Bao1702.Codeplug/Bao1702.Codeplug.csproj" />
+    <Project Path="src/Bao1702.Desktop/Bao1702.Desktop.csproj" />
+    <Project Path="src/Bao1702.Firmware/Bao1702.Firmware.csproj" />
+    <Project Path="src/Bao1702.Protocol/Bao1702.Protocol.csproj" />
+    <Project Path="src/Bao1702.ReverseEngineering/Bao1702.ReverseEngineering.csproj" />
+    <Project Path="src/Bao1702.Transport/Bao1702.Transport.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Bao1702.Tests/Bao1702.Tests.csproj" />
+  </Folder>
+</Solution>

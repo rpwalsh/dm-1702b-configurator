@@ -1,0 +1,161 @@
+<Window x:Class="Bao1702.Desktop.AboutWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="About Bao1702 Desktop"
+        Width="520"
+        Height="420"
+        ResizeMode="NoResize"
+        WindowStartupLocation="CenterOwner"
+        ShowInTaskbar="False">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="100" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <!-- Header band: deep green-black gradient with gold bottom accent line -->
+        <Border Grid.Row="0">
+            <Border.Background>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                    <GradientStop Color="#070A07" Offset="0" />
+                    <GradientStop Color="#0F1F0F" Offset="0.5" />
+                    <GradientStop Color="#070A07" Offset="1" />
+                </LinearGradientBrush>
+            </Border.Background>
+            <Border.Effect>
+                <DropShadowEffect Color="Black" BlurRadius="10" ShadowDepth="3" Opacity="0.7" Direction="270" />
+            </Border.Effect>
+            <Grid>
+                <!-- Gold bottom accent line -->
+                <Border VerticalAlignment="Bottom" Height="2">
+                    <Border.Background>
+                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                            <GradientStop Color="#00000000" Offset="0" />
+                            <GradientStop Color="#C9A84C"   Offset="0.3" />
+                            <GradientStop Color="#E8C547"   Offset="0.5" />
+                            <GradientStop Color="#C9A84C"   Offset="0.7" />
+                            <GradientStop Color="#00000000" Offset="1" />
+                        </LinearGradientBrush>
+                    </Border.Background>
+                </Border>
+
+                <DockPanel Margin="24,0,24,6">
+                    <!-- Icon badge: forest green glow -->
+                    <Border DockPanel.Dock="Left"
+                            CornerRadius="12"
+                            Width="56" Height="56"
+                            VerticalAlignment="Center"
+                            Margin="0,0,18,0">
+                        <Border.Background>
+                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                <GradientStop Color="#1A4731" Offset="0" />
+                                <GradientStop Color="#2D6A4F" Offset="1" />
+                            </LinearGradientBrush>
+                        </Border.Background>
+                        <Border.Effect>
+                            <DropShadowEffect Color="#40916C" BlurRadius="16" ShadowDepth="0" Opacity="0.7" />
+                        </Border.Effect>
+                        <!-- Gold ring around badge -->
+                        <Border CornerRadius="10" BorderBrush="#C9A84C" BorderThickness="1.5" Margin="2">
+                            <TextBlock Text="📻" FontSize="26"
+                                       HorizontalAlignment="Center"
+                                       VerticalAlignment="Center" />
+                        </Border>
+                    </Border>
+
+                    <StackPanel VerticalAlignment="Center">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="Bao1702" FontSize="21" FontWeight="Bold"   Foreground="#C9A84C" />
+                            <TextBlock Text=" Desktop" FontSize="21" FontWeight="Light" Foreground="#A8C5A8" />
+                        </StackPanel>
+                        <TextBlock x:Name="VersionText"
+                                   FontSize="11" Foreground="{StaticResource MutedBrush}"
+                                   Margin="0,4,0,0" />
+                        <TextBlock Text="Walsh Tech Group · Safety-First CPS"
+                                   FontSize="9"  Foreground="{StaticResource MutedBrush}"
+                                   Margin="0,2,0,0" />
+                    </StackPanel>
+                </DockPanel>
+            </Grid>
+        </Border>
+
+        <!-- Body -->
+        <StackPanel Grid.Row="1" Margin="24,18,24,0">
+
+            <!-- Tagline -->
+            <TextBlock TextWrapping="Wrap"
+                       FontSize="12"
+                       Foreground="{StaticResource MutedBrush}"
+                       Margin="0,0,0,14"
+                       LineHeight="20">
+                Safety-first codeplug programmer and reverse-engineering workstation for the
+                <Run Foreground="#C9A84C" FontWeight="SemiBold">Baofeng DM-1702 / BF-1702B</Run> family.
+                Independently implemented configuration and diagnostics software for compatible radios.
+            </TextBlock>
+
+            <!-- Disclaimer card: dark green border on bottom -->
+            <Border Background="#0A120A"
+                    BorderThickness="0,0,0,3"
+                    CornerRadius="6"
+                    Padding="14,12"
+                    Margin="0,0,0,14">
+                <Border.BorderBrush>
+                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                        <GradientStop Color="#1A4731" Offset="0" />
+                        <GradientStop Color="#40916C" Offset="0.5" />
+                        <GradientStop Color="#1A4731" Offset="1" />
+                    </LinearGradientBrush>
+                </Border.BorderBrush>
+                <StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                        <TextBlock Text="⚠" FontSize="13" Foreground="#C9A84C" Margin="0,0,6,0" />
+                        <TextBlock Text="DISCLAIMER" FontSize="11" FontWeight="Bold"
+                                   Foreground="#C9A84C" VerticalAlignment="Center" />
+                    </StackPanel>
+                    <TextBlock TextWrapping="Wrap" FontSize="11" Foreground="{StaticResource ForegroundBrush}" LineHeight="18">
+                        This software is provided without warranty. Writing to radio hardware carries inherent risk.
+                        Always maintain a verified backup before writing any codeplug. The authors are not
+                        responsible for damage to equipment or loss of programming.
+                    </TextBlock>
+                </StackPanel>
+            </Border>
+
+            <!-- License row -->
+            <DockPanel>
+                <TextBlock DockPanel.Dock="Right" FontSize="11" Foreground="{StaticResource MutedBrush}"
+                           VerticalAlignment="Center">Proprietary — All Rights Reserved</TextBlock>
+                <TextBlock FontSize="11" Foreground="{StaticResource MutedBrush}">
+                    Published for public viewing and professional reference only. No use, copying, modification, distribution, resale, deployment, or derivative works are permitted without prior written permission.
+                </TextBlock>
+            </DockPanel>
+        </StackPanel>
+
+        <!-- Footer -->
+        <Border Grid.Row="2"
+                Background="#070A07"
+                BorderThickness="0,1,0,0"
+                Padding="24,12">
+            <Border.BorderBrush>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                    <GradientStop Color="#070A07"  Offset="0" />
+                    <GradientStop Color="#1A4731"  Offset="0.3" />
+                    <GradientStop Color="#C9A84C"  Offset="0.5" />
+                    <GradientStop Color="#1A4731"  Offset="0.7" />
+                    <GradientStop Color="#070A07"  Offset="1" />
+                </LinearGradientBrush>
+            </Border.BorderBrush>
+            <DockPanel>
+                <TextBlock DockPanel.Dock="Left" FontSize="10" Foreground="{StaticResource MutedBrush}"
+                           VerticalAlignment="Center">
+                    Not affiliated with Baofeng or any OEM.
+                </TextBlock>
+                <Button Content="Close"
+                        Width="88"
+                        HorizontalAlignment="Right"
+                        IsDefault="True"
+                        Click="OkButton_Click" />
+            </DockPanel>
+        </Border>
+    </Grid>
+</Window>

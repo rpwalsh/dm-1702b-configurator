@@ -1,0 +1,2 @@
+Name,ChannelType,RxFrequencyMHz,TxFrequencyMHz,Power,Bandwidth,AdmitCriteria,ReceiveOnly,ZoneNames,RxTone,TxTone,ColorCode,TimeSlot,ContactName,RxGroupName
+REPEATER-EXAMPLE,Analog,146.9400,146.3400,Low,Wide,ChannelFree,False,,,,,,,

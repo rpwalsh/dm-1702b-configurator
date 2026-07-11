@@ -1,0 +1,21 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Bao1702.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Bao1702.Codeplug\Bao1702.Codeplug.csproj" />
+    <ProjectReference Include="..\Bao1702.Firmware\Bao1702.Firmware.csproj" />
+    <ProjectReference Include="..\Bao1702.Protocol\Bao1702.Protocol.csproj" />
+    <ProjectReference Include="..\Bao1702.Transport\Bao1702.Transport.csproj" />
+  </ItemGroup>
+
+</Project>

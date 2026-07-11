@@ -1,0 +1,2 @@
+Name,ChannelType,RxFrequencyMHz,TxFrequencyMHz,Power,Bandwidth,AdmitCriteria,ReceiveOnly,ZoneNames,RxTone,TxTone,ColorCode,TimeSlot,ContactName,RxGroupName
+WX-1-RX,Analog,162.5500,162.5500,Low,Narrow,Always,True,,,,,,,

@@ -1,0 +1,13 @@
+<Project>
+  <PropertyGroup>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <AnalysisLevel>latest</AnalysisLevel>
+    <EnforceCodeStyleInBuild>false</EnforceCodeStyleInBuild>
+    <RepositoryUrl>https://github.com/rpwalsh/dm-1702b-configurator</RepositoryUrl>
+    <Authors>Ryan Walsh</Authors>
+    <Company>Walsh Tech Group</Company>
+  </PropertyGroup>
+</Project>

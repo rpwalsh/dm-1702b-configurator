@@ -1,0 +1,2 @@
+Name,ChannelType,RxFrequencyMHz,TxFrequencyMHz,Power,Bandwidth,AdmitCriteria,ReceiveOnly,ZoneNames,RxTone,TxTone,ColorCode,TimeSlot,ContactName,RxGroupName
+DMR-EXAMPLE,Digital,444.0000,449.0000,Low,Narrow,ColorCodeFree,False,,,,1,1,,

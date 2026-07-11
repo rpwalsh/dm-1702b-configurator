@@ -1,0 +1,78 @@
+# Build outputs
+bin/
+obj/
+out/
+
+# IDE and user settings
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# NuGet
+packages/
+*.nupkg
+project.lock.json
+
+# Test results
+TestResults/
+
+# OS files
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+.DS_Store
+
+# Rider / JetBrains
+.idea/
+
+# Publish profiles (may contain secrets)
+*.pubxml.user
+
+# Build artifacts
+publish/
+artifacts/
+
+# Temp scripts from debugging sessions
+*.csx
+test
+test.log
+
+# Local tools (Wireshark, USBPcap, etc. — too large for git)
+tools/
+
+# Private radio, capture, firmware, credential, and executable material
+*.bin
+*.data
+*.img
+*.codeplug
+*.capture
+*.pcap
+*.pcapng
+*.hex
+*.fw
+*.firmware
+*.exe
+*.dll
+*.sys
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+*.keystore
+/captures/
+/firmware/
+/private-fixtures/
+/personal/
+
+# Source project directories must never be shadowed by artifact patterns.
+!src/Bao1702.Codeplug/
+!src/Bao1702.Codeplug/**
+!src/Bao1702.Firmware/
+!src/Bao1702.Firmware/**
+/src/Bao1702.Codeplug/bin/
+/src/Bao1702.Codeplug/obj/
+/src/Bao1702.Firmware/bin/
+/src/Bao1702.Firmware/obj/

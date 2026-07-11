@@ -1,0 +1,1116 @@
+﻿<Window x:Class="Bao1702.Desktop.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:converters="clr-namespace:Bao1702.Desktop.Converters"
+        mc:Ignorable="d"
+        Title="{Binding Title}"
+        Height="860"
+        Width="1440"
+        MinHeight="700"
+        MinWidth="1060"
+        WindowStartupLocation="CenterScreen">
+    <Window.Resources>
+        <converters:BoolToVisibilityConverter x:Key="BoolToVis" />
+        <converters:InverseBoolToVisibilityConverter x:Key="InverseBoolToVis" />
+        <converters:FrequencyDisplayConverter x:Key="FreqConv" />
+        <converters:LogLevelToBrushConverter x:Key="LogLevelBrush" />
+        <converters:PercentDisplayConverter x:Key="PctConv" />
+        <converters:NonEmptyStringToVisibilityConverter x:Key="NonEmptyVis" />
+    </Window.Resources>
+
+    <Grid Background="{StaticResource BackgroundBrush}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <!-- ═══════════ HEADER / TOOLBAR ═══════════ -->
+        <Border Grid.Row="0">
+            <Border.Background>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                    <GradientStop Color="#070A07" Offset="0" />
+                    <GradientStop Color="#0E130E" Offset="1" />
+                </LinearGradientBrush>
+            </Border.Background>
+            <Border.Effect>
+                <DropShadowEffect Color="Black" BlurRadius="12" ShadowDepth="2" Opacity="0.6" Direction="270" />
+            </Border.Effect>
+            <DockPanel Margin="12,0" MinHeight="56">
+
+                <!-- Brand mark — always left -->
+                <StackPanel DockPanel.Dock="Left" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,16,0">
+                    <Border Background="#1A2E1A" CornerRadius="8" Padding="8,6" Margin="0,0,10,0"
+                            BorderBrush="#C9A84C" BorderThickness="1">
+                        <TextBlock Text="📻" FontSize="18" VerticalAlignment="Center" />
+                    </Border>
+                    <StackPanel VerticalAlignment="Center">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="Bao1702" FontSize="15" FontWeight="Bold"   Foreground="#C9A84C" />
+                            <TextBlock Text=" Desktop" FontSize="15" FontWeight="Light" Foreground="#A8C5A8" />
+                        </StackPanel>
+                        <TextBlock Text="DM-1702 · BF-1702B Codeplug Programmer"
+                                   FontSize="9" Foreground="{StaticResource MutedBrush}" Margin="0,1,0,0" />
+                    </StackPanel>
+                </StackPanel>
+
+                <!-- Status pill — right side (must be declared before center fill) -->
+                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center" Margin="8,0,0,0">
+                    <Border Background="#0E130E"
+                            BorderBrush="{StaticResource BorderBrush}"
+                            BorderThickness="1"
+                            CornerRadius="20"
+                            Padding="10,5">
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <Ellipse Width="7" Height="7" Margin="0,0,6,0">
+                                <Ellipse.Style>
+                                    <Style TargetType="Ellipse">
+                                        <Setter Property="Fill" Value="#2D3D2D" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsConnected}" Value="True">
+                                                <Setter Property="Fill" Value="#40916C" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Ellipse.Style>
+                            </Ellipse>
+                            <TextBlock Text="{Binding ConnectionStatus}"
+                                       FontSize="11" Foreground="#A8C5A8"
+                                       VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Border>
+                    <TextBlock Text="{Binding SelectedRadio}"
+                               Foreground="#C9A84C"
+                               FontSize="11"
+                               FontWeight="SemiBold"
+                               VerticalAlignment="Center"
+                               Margin="10,0,0,0"
+                               Visibility="{Binding SelectedRadio, Converter={StaticResource NonEmptyVis}}" />
+                </StackPanel>
+
+                <!-- Centre: action button groups — fills remaining space -->
+                <WrapPanel HorizontalAlignment="Center" VerticalAlignment="Center" Orientation="Horizontal">
+
+                    <!-- Group 1: File -->
+                    <Button Content="📂  Open"      Command="{Binding OpenCodeplugFileCommand}"  ToolTip="Open codeplug file" />
+                    <Button Content="💾  Save"      Command="{Binding SaveCodeplugFileCommand}"  ToolTip="Save codeplug file" />
+
+                    <Border Width="1" Background="{StaticResource BorderBrush}" Margin="6,10" />
+
+                    <!-- Group 2: Radio I/O -->
+                    <Button Content="📥  Read"      Command="{Binding ReadCodeplugCommand}"      ToolTip="Read codeplug from radio (auto-connects)" />
+                    <Button Content="📤  Write"     Command="{Binding WriteCodeplugCommand}"     ToolTip="Write codeplug to radio (auto-connects)" />
+                    <Button Content="✓  Validate"  Command="{Binding ValidateCommand}"          ToolTip="Validate current codeplug" />
+
+                    <Border Width="1" Background="{StaticResource BorderBrush}" Margin="6,10" />
+
+                    <!-- Group 3: Advanced -->
+                    <Button Content="🔧  FW Backup" Command="{Binding BackupFirmwareCommand}"    ToolTip="Backup firmware image"                Style="{StaticResource GhostButton}" />
+                    <Button Content="ℹ  About"     Command="{Binding ShowAboutCommand}"         ToolTip="About Bao1702 Desktop"                Style="{StaticResource GhostButton}" />
+                </WrapPanel>
+            </DockPanel>
+        </Border>
+
+        <!-- ═══════════ PROGRESS BAR ═══════════ -->
+        <Border Grid.Row="1" Background="#070A07" Padding="16,6"
+                Visibility="{Binding IsProgressVisible, Converter={StaticResource BoolToVis}}">
+            <DockPanel>
+                <TextBlock DockPanel.Dock="Right"
+                           Text="{Binding ProgressText}"
+                           FontSize="11" FontFamily="Consolas"
+                           Foreground="#C9A84C"
+                           VerticalAlignment="Center"
+                           Margin="12,0,0,0" />
+                <ProgressBar Value="{Binding ProgressValue}" Minimum="0" Maximum="100" Height="6" />
+            </DockPanel>
+        </Border>
+
+        <!-- ═══════════ MAIN CONTENT ═══════════ -->
+        <Grid Grid.Row="2" Margin="0" Background="{StaticResource BackgroundBrush}">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="2.5*" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="1.2*" />
+            </Grid.ColumnDefinitions>
+
+            <!-- LEFT: Main TabControl -->
+            <TabControl Grid.Column="0" Margin="8,8,0,8">
+
+                <!-- ─── CONNECT TAB ─── -->
+                <TabItem Header="🔌 Connect">
+                    <Grid Margin="0,8,0,0">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+
+                            <!-- Device status -->
+                            <GroupBox Header="Device" Grid.Row="0">
+                                <StackPanel>
+                                    <TextBlock FontSize="12" Foreground="{StaticResource ForegroundBrush}"
+                                               Text="{Binding SelectedRadio}" FontWeight="SemiBold" />
+                                    <TextBlock Margin="0,4,0,0" FontSize="11"
+                                               Foreground="{StaticResource MutedBrush}"
+                                               Text="Click Connect to discover and identify the radio. The USB printer device is detected automatically." />
+                                </StackPanel>
+                            </GroupBox>
+
+                            <!-- Radio info -->
+                            <GroupBox Grid.Row="1" Header="Radio Information">
+                                <TextBlock Text="{Binding RadioInfoSummary}" TextWrapping="Wrap" FontFamily="Consolas" FontSize="12" />
+                            </GroupBox>
+
+                            <!-- Safety posture -->
+                            <GroupBox Grid.Row="2" Header="Safety Posture">
+                                <StackPanel>
+                                    <Border Background="{StaticResource SubtleBrush}" CornerRadius="4" Padding="10" Margin="0,0,0,10"
+                                            BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+                                        <StackPanel>
+                                            <TextBlock Text="{Binding SafetyDecisionSummary}" TextWrapping="Wrap"
+                                                       FontWeight="SemiBold" Foreground="{StaticResource AmberBrush}" />
+                                            <TextBlock Margin="0,6,0,0" Text="{Binding SafetyReasonsSummary}"
+                                                       TextWrapping="Wrap" FontFamily="Consolas" FontSize="11"
+                                                       Foreground="{StaticResource MutedBrush}" />
+                                        </StackPanel>
+                                    </Border>
+                                    <TextBlock TextWrapping="Wrap" Foreground="{StaticResource AmberBrush}"
+                                               FontWeight="SemiBold" Margin="0,0,0,6">
+                                        ⚠ Safety-first design
+                                    </TextBlock>
+                                    <TextBlock TextWrapping="Wrap" FontSize="12" Foreground="{StaticResource ForegroundBrush}">
+                                        • Unknown or partially identified radios remain readable but NOT writable.
+                                    </TextBlock>
+                                    <TextBlock TextWrapping="Wrap" FontSize="12" Foreground="{StaticResource ForegroundBrush}">
+                                        • A full codeplug backup is mandatory before any write operation.
+                                    </TextBlock>
+                                    <TextBlock TextWrapping="Wrap" FontSize="12" Foreground="{StaticResource ForegroundBrush}">
+                                        • Firmware flashing remains disabled pending capture-driven validation.
+                                    </TextBlock>
+                                        <TextBlock TextWrapping="Wrap" FontSize="12" Foreground="{StaticResource ForegroundBrush}">
+                                            • DM-1702 targets are classified as read-only in the compatibility matrix.
+                                        </TextBlock>
+                                    </StackPanel>
+                            </GroupBox>
+
+                            <!-- Operation workflow -->
+                            <GroupBox Grid.Row="3" Header="Recommended Workflow">
+                                <StackPanel>
+                                    <TextBlock FontSize="12" Foreground="{StaticResource ForegroundBrush}">1. Open a codeplug file, or Read from radio (auto-connects)</TextBlock>
+                                    <TextBlock FontSize="12" Foreground="{StaticResource ForegroundBrush}">2. Edit channels, contacts, zones, parameters, buttons, or import CSV</TextBlock>
+                                    <TextBlock FontSize="12" Foreground="{StaticResource ForegroundBrush}">3. Save to file, or Write to radio (auto-connects)</TextBlock>
+                                    <TextBlock FontSize="12" Foreground="{StaticResource ForegroundBrush}">4. Validate checks the codeplug for errors before write</TextBlock>
+                                </StackPanel>
+                            </GroupBox>
+                        </Grid>
+                </TabItem>
+
+                <!-- ─── CODEPLUG EDITOR TAB ─── -->
+                <TabItem Header="📋 Codeplug Editor">
+                    <Grid Margin="0,8,0,0">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+
+                            <!-- Settings summary bar -->
+                            <Border Grid.Row="0" Background="{StaticResource SubtleBrush}" CornerRadius="6" Padding="12,8" Margin="0,0,0,8"
+                                    BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+                                <WrapPanel>
+                                    <TextBlock FontWeight="SemiBold" Foreground="{StaticResource GoldBrush}" Margin="0,0,16,0">
+                                        <Run Text="Radio: " /><Run Text="{Binding CodeplugEditor.RadioName, Mode=OneWay}" Foreground="{StaticResource ForegroundBrush}" />
+                                    </TextBlock>
+                                    <TextBlock Foreground="{StaticResource MutedBrush}" Margin="0,0,16,0">
+                                        <Run Text="DMR ID: " /><Run Text="{Binding CodeplugEditor.DmrId, Mode=OneWay}" Foreground="{StaticResource ForegroundBrush}" />
+                                    </TextBlock>
+                                    <TextBlock Foreground="{StaticResource MutedBrush}" Margin="0,0,16,0">
+                                        <Run Text="Call: " /><Run Text="{Binding CodeplugEditor.Callsign, Mode=OneWay}" Foreground="{StaticResource ForegroundBrush}" />
+                                    </TextBlock>
+                                    <TextBlock Foreground="{StaticResource MutedBrush}" Margin="0,0,16,0">
+                                        <Run Text="Power: " /><Run Text="{Binding CodeplugEditor.DefaultPower, Mode=OneWay}" Foreground="{StaticResource ForegroundBrush}" />
+                                    </TextBlock>
+                                    <TextBlock Foreground="{StaticResource MutedBrush}">
+                                        <Run Text="CH:" /><Run Text="{Binding CodeplugEditor.ChannelCount, Mode=OneWay}" Foreground="{StaticResource ForegroundBrush}" />
+                                        <Run Text=" Z:" /><Run Text="{Binding CodeplugEditor.ZoneCount, Mode=OneWay}" Foreground="{StaticResource ForegroundBrush}" />
+                                        <Run Text=" C:" /><Run Text="{Binding CodeplugEditor.ContactCount, Mode=OneWay}" Foreground="{StaticResource ForegroundBrush}" />
+                                        <Run Text=" GL:" /><Run Text="{Binding CodeplugEditor.GroupListCount, Mode=OneWay}" Foreground="{StaticResource ForegroundBrush}" />
+                                    </TextBlock>
+                                </WrapPanel>
+                            </Border>
+
+                            <!-- Sub-tabs for each codeplug section -->
+                            <TabControl Grid.Row="1" SelectedIndex="{Binding CodeplugEditor.SelectedEditorTab}">
+
+                                <!-- Channels -->
+                                <TabItem Header="Channels">
+                                    <Grid>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="*" />
+                                            <RowDefinition Height="Auto" />
+                                        </Grid.RowDefinitions>
+                                        <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                                            <Button Content="＋ Analog" Command="{Binding CodeplugEditor.AddAnalogChannelCommand}" Padding="8,3" Margin="0,0,4,0" />
+                                            <Button Content="＋ Digital" Command="{Binding CodeplugEditor.AddDigitalChannelCommand}" Padding="8,3" Margin="0,0,4,0" />
+                                            <Button Content="✕ Delete" Command="{Binding CodeplugEditor.DeleteChannelCommand}" Padding="8,3" />
+                                        </StackPanel>
+                                        <DataGrid Grid.Row="1" AutoGenerateColumns="False"
+                                                  IsReadOnly="False"
+                                                  SelectedItem="{Binding CodeplugEditor.SelectedChannel}"
+                                                  ItemsSource="{Binding CodeplugEditor.Channels}">
+                                            <DataGrid.Columns>
+                                                <DataGridTextColumn Header="#" Binding="{Binding Index}" Width="50" IsReadOnly="True" />
+                                                <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="180" EditingElementStyle="{StaticResource DataGridEditBox}" />
+                                                <DataGridTextColumn Header="Type" Binding="{Binding Kind}" Width="80" IsReadOnly="True" />
+                                                <DataGridTextColumn Header="RX Freq" Binding="{Binding RxFrequencyHz, Converter={StaticResource FreqConv}}" Width="130" IsReadOnly="True" />
+                                                <DataGridTextColumn Header="TX Freq" Binding="{Binding TxFrequencyHz, Converter={StaticResource FreqConv}}" Width="130" IsReadOnly="True" />
+                                                <DataGridTextColumn Header="Power" Binding="{Binding Power}" Width="70" IsReadOnly="True" />
+                                                <DataGridTextColumn Header="BW" Binding="{Binding Bandwidth}" Width="70" IsReadOnly="True" />
+                                                <DataGridTextColumn Header="Admit" Binding="{Binding AdmitCriteria}" Width="100" IsReadOnly="True" />
+                                            </DataGrid.Columns>
+                                        </DataGrid>
+
+                                        <!-- Channel detail editor -->
+                                        <Border Grid.Row="2" Background="{StaticResource SubtleBrush}" CornerRadius="4" Padding="10,8" Margin="0,6,0,0"
+                                                BorderBrush="{StaticResource BorderBrush}" BorderThickness="1"
+                                                Visibility="{Binding CodeplugEditor.SelectedChannel, Converter={StaticResource NonEmptyVis}}">
+                                            <StackPanel>
+                                                <TextBlock Text="Channel Properties" FontWeight="SemiBold" Foreground="{StaticResource GoldBrush}" Margin="0,0,0,6" />
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="100" />
+                                                        <ColumnDefinition Width="*" />
+                                                        <ColumnDefinition Width="100" />
+                                                        <ColumnDefinition Width="*" />
+                                                        <ColumnDefinition Width="100" />
+                                                        <ColumnDefinition Width="*" />
+                                                    </Grid.ColumnDefinitions>
+                                                    <Grid.RowDefinitions>
+                                                        <RowDefinition Height="Auto" />
+                                                        <RowDefinition Height="Auto" />
+                                                        <RowDefinition Height="Auto" />
+                                                        <RowDefinition Height="Auto" />
+                                                    </Grid.RowDefinitions>
+
+                                                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Name:" VerticalAlignment="Center" />
+                                                    <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding CodeplugEditor.EditChannelName, UpdateSourceTrigger=PropertyChanged}" MaxLength="16" />
+
+                                                    <TextBlock Grid.Row="0" Grid.Column="2" Text="RX (MHz):" VerticalAlignment="Center" Margin="8,0,0,0" />
+                                                    <TextBox Grid.Row="0" Grid.Column="3" Text="{Binding CodeplugEditor.EditRxFrequency, UpdateSourceTrigger=PropertyChanged}" />
+
+                                                    <TextBlock Grid.Row="0" Grid.Column="4" Text="TX (MHz):" VerticalAlignment="Center" Margin="8,0,0,0" />
+                                                    <TextBox Grid.Row="0" Grid.Column="5" Text="{Binding CodeplugEditor.EditTxFrequency, UpdateSourceTrigger=PropertyChanged}" />
+
+                                                    <TextBlock Grid.Row="1" Grid.Column="0" Text="Power:" VerticalAlignment="Center" Margin="0,4,0,0" />
+                                                    <ComboBox Grid.Row="1" Grid.Column="1" SelectedItem="{Binding CodeplugEditor.EditPower}" Margin="0,4,0,0"
+                                                              ItemsSource="{Binding Source={x:Static converters:EnumSource.PowerLevels}}" />
+
+                                                    <TextBlock Grid.Row="1" Grid.Column="2" Text="Bandwidth:" VerticalAlignment="Center" Margin="8,4,0,0" />
+                                                    <ComboBox Grid.Row="1" Grid.Column="3" SelectedItem="{Binding CodeplugEditor.EditBandwidth}" Margin="0,4,0,0"
+                                                              ItemsSource="{Binding Source={x:Static converters:EnumSource.Bandwidths}}" />
+
+                                                    <TextBlock Grid.Row="1" Grid.Column="4" Text="Admit:" VerticalAlignment="Center" Margin="8,4,0,0" />
+                                                    <ComboBox Grid.Row="1" Grid.Column="5" SelectedItem="{Binding CodeplugEditor.EditAdmitCriteria}" Margin="0,4,0,0"
+                                                              ItemsSource="{Binding Source={x:Static converters:EnumSource.AdmitCriteria}}" />
+
+                                                    <!-- Analog fields -->
+                                                    <TextBlock Grid.Row="2" Grid.Column="0" Text="RX Tone:" VerticalAlignment="Center" Margin="0,4,0,0"
+                                                               Visibility="{Binding CodeplugEditor.IsAnalogSelected, Converter={StaticResource BoolToVis}}" />
+                                                    <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding CodeplugEditor.EditRxTone, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,0"
+                                                             Visibility="{Binding CodeplugEditor.IsAnalogSelected, Converter={StaticResource BoolToVis}}" />
+
+                                                    <TextBlock Grid.Row="2" Grid.Column="2" Text="TX Tone:" VerticalAlignment="Center" Margin="8,4,0,0"
+                                                               Visibility="{Binding CodeplugEditor.IsAnalogSelected, Converter={StaticResource BoolToVis}}" />
+                                                    <TextBox Grid.Row="2" Grid.Column="3" Text="{Binding CodeplugEditor.EditTxTone, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,0"
+                                                             Visibility="{Binding CodeplugEditor.IsAnalogSelected, Converter={StaticResource BoolToVis}}" />
+
+                                                    <!-- Digital fields -->
+                                                    <TextBlock Grid.Row="2" Grid.Column="0" Text="Color Code:" VerticalAlignment="Center" Margin="0,4,0,0"
+                                                               Visibility="{Binding CodeplugEditor.IsDigitalSelected, Converter={StaticResource BoolToVis}}" />
+                                                    <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding CodeplugEditor.EditColorCode, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,0"
+                                                             Visibility="{Binding CodeplugEditor.IsDigitalSelected, Converter={StaticResource BoolToVis}}" />
+
+                                                    <TextBlock Grid.Row="2" Grid.Column="2" Text="Time Slot:" VerticalAlignment="Center" Margin="8,4,0,0"
+                                                               Visibility="{Binding CodeplugEditor.IsDigitalSelected, Converter={StaticResource BoolToVis}}" />
+                                                    <TextBox Grid.Row="2" Grid.Column="3" Text="{Binding CodeplugEditor.EditTimeSlot, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,0"
+                                                             Visibility="{Binding CodeplugEditor.IsDigitalSelected, Converter={StaticResource BoolToVis}}" />
+
+                                                    <TextBlock Grid.Row="2" Grid.Column="4" Text="Contact:" VerticalAlignment="Center" Margin="8,4,0,0"
+                                                               Visibility="{Binding CodeplugEditor.IsDigitalSelected, Converter={StaticResource BoolToVis}}" />
+                                                    <TextBox Grid.Row="2" Grid.Column="5" Text="{Binding CodeplugEditor.EditChContactName, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,0"
+                                                             Visibility="{Binding CodeplugEditor.IsDigitalSelected, Converter={StaticResource BoolToVis}}" />
+
+                                                    <TextBlock Grid.Row="3" Grid.Column="0" Text="RX Group:" VerticalAlignment="Center" Margin="0,4,0,0"
+                                                               Visibility="{Binding CodeplugEditor.IsDigitalSelected, Converter={StaticResource BoolToVis}}" />
+                                                    <TextBox Grid.Row="3" Grid.Column="1" Text="{Binding CodeplugEditor.EditChRxGroupName, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,0"
+                                                             Visibility="{Binding CodeplugEditor.IsDigitalSelected, Converter={StaticResource BoolToVis}}" />
+                                                </Grid>
+                                                <Button Content="✓ Apply Changes" Command="{Binding CodeplugEditor.ApplyChannelEditCommand}"
+                                                        HorizontalAlignment="Left" Margin="0,8,0,0" Padding="12,4" />
+                                            </StackPanel>
+                                        </Border>
+                                    </Grid>
+                                </TabItem>
+
+                                <!-- Zones -->
+                                <TabItem Header="Zones">
+                                    <Grid>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="*" />
+                                            <RowDefinition Height="Auto" />
+                                        </Grid.RowDefinitions>
+                                        <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                                            <Button Content="＋ Add Zone" Command="{Binding CodeplugEditor.AddZoneCommand}" Padding="8,3" Margin="0,0,4,0" />
+                                            <Button Content="✕ Delete" Command="{Binding CodeplugEditor.DeleteZoneCommand}" Padding="8,3" />
+                                        </StackPanel>
+                                        <DataGrid Grid.Row="1" AutoGenerateColumns="False"
+                                                  IsReadOnly="False"
+                                                  SelectedItem="{Binding CodeplugEditor.SelectedZone}"
+                                                  ItemsSource="{Binding CodeplugEditor.Zones}">
+                                            <DataGrid.Columns>
+                                                <DataGridTextColumn Header="Zone Name" Binding="{Binding Name}" Width="200" EditingElementStyle="{StaticResource DataGridEditBox}" />
+                                                <DataGridTextColumn Header="Channels" Binding="{Binding ChannelNames.Count}" Width="80" IsReadOnly="True" />
+                                                <DataGridTextColumn Header="Channel List" Binding="{Binding ChannelNames, Converter={x:Static converters:JoinConverter.Instance}}" Width="*" IsReadOnly="True" />
+                                                <DataGridTextColumn Header="Confidence" Binding="{Binding Confidence}" Width="90" IsReadOnly="True" />
+                                            </DataGrid.Columns>
+                                        </DataGrid>
+
+                                        <!-- Zone detail editor -->
+                                        <Border Grid.Row="2" Background="{StaticResource SubtleBrush}" CornerRadius="4" Padding="10,8" Margin="0,6,0,0"
+                                                BorderBrush="{StaticResource BorderBrush}" BorderThickness="1"
+                                                Visibility="{Binding CodeplugEditor.SelectedZone, Converter={StaticResource NonEmptyVis}}">
+                                            <StackPanel>
+                                                <TextBlock Text="Zone Properties" FontWeight="SemiBold" Foreground="{StaticResource GoldBrush}" Margin="0,0,0,6" />
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="100" />
+                                                        <ColumnDefinition Width="*" />
+                                                    </Grid.ColumnDefinitions>
+                                                    <Grid.RowDefinitions>
+                                                        <RowDefinition Height="Auto" />
+                                                        <RowDefinition Height="Auto" />
+                                                    </Grid.RowDefinitions>
+
+                                                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Name:" VerticalAlignment="Center" />
+                                                    <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding CodeplugEditor.EditZoneName, UpdateSourceTrigger=PropertyChanged}" MaxLength="16" />
+
+                                                    <TextBlock Grid.Row="1" Grid.Column="0" Text="Channels:" VerticalAlignment="Center" Margin="0,4,0,0" />
+                                                    <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding CodeplugEditor.EditZoneChannels, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,0"
+                                                             ToolTip="Comma-separated channel names" />
+                                                </Grid>
+                                                <Button Content="✓ Apply Changes" Command="{Binding CodeplugEditor.ApplyZoneEditCommand}"
+                                                        HorizontalAlignment="Left" Margin="0,8,0,0" Padding="12,4" />
+                                            </StackPanel>
+                                        </Border>
+                                    </Grid>
+                                </TabItem>
+
+                                <!-- Contacts -->
+                                <TabItem Header="Contacts">
+                                    <Grid>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="*" />
+                                            <RowDefinition Height="Auto" />
+                                        </Grid.RowDefinitions>
+                                        <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                                            <Button Content="＋ Add Contact" Command="{Binding CodeplugEditor.AddContactCommand}" Padding="8,3" Margin="0,0,4,0" />
+                                            <Button Content="✕ Delete" Command="{Binding CodeplugEditor.DeleteContactCommand}" Padding="8,3" />
+                                        </StackPanel>
+                                        <DataGrid Grid.Row="1" AutoGenerateColumns="False"
+                                                  IsReadOnly="False"
+                                                  SelectedItem="{Binding CodeplugEditor.SelectedContact}"
+                                                         ItemsSource="{Binding CodeplugEditor.Contacts}">
+                                                  <DataGrid.Columns>
+                                                      <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="200" EditingElementStyle="{StaticResource DataGridEditBox}" />
+                                                      <DataGridTextColumn Header="Call ID" Binding="{Binding CallId}" Width="100" EditingElementStyle="{StaticResource DataGridEditBox}" />
+                                                      <DataGridTextColumn Header="Type" Binding="{Binding ContactType}" Width="100" />
+                                                <DataGridTextColumn Header="Confidence" Binding="{Binding Confidence}" Width="100" IsReadOnly="True" />
+                                            </DataGrid.Columns>
+                                        </DataGrid>
+
+                                        <!-- Contact detail editor -->
+                                        <Border Grid.Row="2" Background="{StaticResource SubtleBrush}" CornerRadius="4" Padding="10,8" Margin="0,6,0,0"
+                                                BorderBrush="{StaticResource BorderBrush}" BorderThickness="1"
+                                                Visibility="{Binding CodeplugEditor.SelectedContact, Converter={StaticResource NonEmptyVis}}">
+                                            <StackPanel>
+                                                <TextBlock Text="Contact Properties" FontWeight="SemiBold" Foreground="{StaticResource GoldBrush}" Margin="0,0,0,6" />
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="100" />
+                                                        <ColumnDefinition Width="*" />
+                                                        <ColumnDefinition Width="100" />
+                                                        <ColumnDefinition Width="*" />
+                                                        <ColumnDefinition Width="100" />
+                                                        <ColumnDefinition Width="*" />
+                                                    </Grid.ColumnDefinitions>
+
+                                                    <TextBlock Grid.Column="0" Text="Name:" VerticalAlignment="Center" />
+                                                    <TextBox Grid.Column="1" Text="{Binding CodeplugEditor.EditContactName, UpdateSourceTrigger=PropertyChanged}" MaxLength="16" />
+
+                                                    <TextBlock Grid.Column="2" Text="Call ID:" VerticalAlignment="Center" Margin="8,0,0,0" />
+                                                    <TextBox Grid.Column="3" Text="{Binding CodeplugEditor.EditContactCallId, UpdateSourceTrigger=PropertyChanged}" MaxLength="8" />
+
+                                                    <TextBlock Grid.Column="4" Text="Type:" VerticalAlignment="Center" Margin="8,0,0,0" />
+                                                    <ComboBox Grid.Column="5" SelectedItem="{Binding CodeplugEditor.EditContactType}"
+                                                              ItemsSource="{Binding Source={x:Static converters:EnumSource.ContactTypes}}" />
+                                                </Grid>
+                                                <Button Content="✓ Apply Changes" Command="{Binding CodeplugEditor.ApplyContactEditCommand}"
+                                                        HorizontalAlignment="Left" Margin="0,8,0,0" Padding="12,4" />
+                                            </StackPanel>
+                                        </Border>
+                                    </Grid>
+                                </TabItem>
+
+                                <!-- Group Lists -->
+                                <TabItem Header="Group Lists">
+                                    <Grid>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="*" />
+                                            <RowDefinition Height="Auto" />
+                                        </Grid.RowDefinitions>
+                                        <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                                            <Button Content="＋ Add Group" Command="{Binding CodeplugEditor.AddGroupListCommand}" Padding="8,3" Margin="0,0,4,0" />
+                                            <Button Content="✕ Delete" Command="{Binding CodeplugEditor.DeleteGroupListCommand}" Padding="8,3" />
+                                        </StackPanel>
+                                        <DataGrid Grid.Row="1" AutoGenerateColumns="False"
+                                                  IsReadOnly="False"
+                                                  SelectedItem="{Binding CodeplugEditor.SelectedGroupList}"
+                                                  ItemsSource="{Binding CodeplugEditor.GroupLists}">
+                                            <DataGrid.Columns>
+                                                <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="200" EditingElementStyle="{StaticResource DataGridEditBox}" />
+                                                <DataGridTextColumn Header="Contacts" Binding="{Binding ContactNames.Count}" Width="80" IsReadOnly="True" />
+                                                <DataGridTextColumn Header="Contact List" Binding="{Binding ContactNames, Converter={x:Static converters:JoinConverter.Instance}}" Width="*" IsReadOnly="True" />
+                                                <DataGridTextColumn Header="Confidence" Binding="{Binding Confidence}" Width="90" IsReadOnly="True" />
+                                            </DataGrid.Columns>
+                                        </DataGrid>
+
+                                        <!-- GroupList detail editor -->
+                                        <Border Grid.Row="2" Background="{StaticResource SubtleBrush}" CornerRadius="4" Padding="10,8" Margin="0,6,0,0"
+                                                BorderBrush="{StaticResource BorderBrush}" BorderThickness="1"
+                                                Visibility="{Binding CodeplugEditor.SelectedGroupList, Converter={StaticResource NonEmptyVis}}">
+                                            <StackPanel>
+                                                <TextBlock Text="Group List Properties" FontWeight="SemiBold" Foreground="{StaticResource GoldBrush}" Margin="0,0,0,6" />
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="100" />
+                                                        <ColumnDefinition Width="*" />
+                                                    </Grid.ColumnDefinitions>
+                                                    <Grid.RowDefinitions>
+                                                        <RowDefinition Height="Auto" />
+                                                        <RowDefinition Height="Auto" />
+                                                    </Grid.RowDefinitions>
+
+                                                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Name:" VerticalAlignment="Center" />
+                                                    <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding CodeplugEditor.EditGroupListEditName, UpdateSourceTrigger=PropertyChanged}" MaxLength="16" />
+
+                                                    <TextBlock Grid.Row="1" Grid.Column="0" Text="Contacts:" VerticalAlignment="Center" Margin="0,4,0,0" />
+                                                    <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding CodeplugEditor.EditGroupListContacts, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,0"
+                                                             ToolTip="Comma-separated contact names" />
+                                                </Grid>
+                                                <Button Content="✓ Apply Changes" Command="{Binding CodeplugEditor.ApplyGroupListEditCommand}"
+                                                        HorizontalAlignment="Left" Margin="0,8,0,0" Padding="12,4" />
+                                            </StackPanel>
+                                        </Border>
+                                    </Grid>
+                                </TabItem>
+
+                                <!-- Scan Lists -->
+                                <TabItem Header="Scan Lists">
+                                    <Grid>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="*" />
+                                            <RowDefinition Height="Auto" />
+                                        </Grid.RowDefinitions>
+                                        <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                                            <Button Content="＋ Add Scan List" Command="{Binding CodeplugEditor.AddScanListCommand}" Padding="8,3" Margin="0,0,4,0" />
+                                            <Button Content="✕ Delete" Command="{Binding CodeplugEditor.DeleteScanListCommand}" Padding="8,3" />
+                                        </StackPanel>
+                                        <DataGrid Grid.Row="1" AutoGenerateColumns="False"
+                                                  IsReadOnly="False"
+                                                  SelectedItem="{Binding CodeplugEditor.SelectedScanList}"
+                                                  ItemsSource="{Binding CodeplugEditor.ScanLists}">
+                                            <DataGrid.Columns>
+                                                <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="200" EditingElementStyle="{StaticResource DataGridEditBox}" />
+                                                <DataGridTextColumn Header="Channels" Binding="{Binding ChannelNames.Count}" Width="80" IsReadOnly="True" />
+                                                <DataGridTextColumn Header="Channel List" Binding="{Binding ChannelNames, Converter={x:Static converters:JoinConverter.Instance}}" Width="*" IsReadOnly="True" />
+                                                <DataGridTextColumn Header="Confidence" Binding="{Binding Confidence}" Width="90" IsReadOnly="True" />
+                                            </DataGrid.Columns>
+                                        </DataGrid>
+
+                                        <!-- ScanList detail editor -->
+                                        <Border Grid.Row="2" Background="{StaticResource SubtleBrush}" CornerRadius="4" Padding="10,8" Margin="0,6,0,0"
+                                                BorderBrush="{StaticResource BorderBrush}" BorderThickness="1"
+                                                Visibility="{Binding CodeplugEditor.SelectedScanList, Converter={StaticResource NonEmptyVis}}">
+                                            <StackPanel>
+                                                <TextBlock Text="Scan List Properties" FontWeight="SemiBold" Foreground="{StaticResource GoldBrush}" Margin="0,0,0,6" />
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="100" />
+                                                        <ColumnDefinition Width="*" />
+                                                    </Grid.ColumnDefinitions>
+                                                    <Grid.RowDefinitions>
+                                                        <RowDefinition Height="Auto" />
+                                                        <RowDefinition Height="Auto" />
+                                                    </Grid.RowDefinitions>
+
+                                                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Name:" VerticalAlignment="Center" />
+                                                    <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding CodeplugEditor.EditScanListName, UpdateSourceTrigger=PropertyChanged}" MaxLength="16" />
+
+                                                    <TextBlock Grid.Row="1" Grid.Column="0" Text="Channels:" VerticalAlignment="Center" Margin="0,4,0,0" />
+                                                    <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding CodeplugEditor.EditScanListChannels, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,0"
+                                                             ToolTip="Comma-separated channel names" />
+                                                </Grid>
+                                                <Button Content="✓ Apply Changes" Command="{Binding CodeplugEditor.ApplyScanListEditCommand}"
+                                                        HorizontalAlignment="Left" Margin="0,8,0,0" Padding="12,4" />
+                                            </StackPanel>
+                                        </Border>
+                                    </Grid>
+                                </TabItem>
+
+                                <!-- RX Groups -->
+                                <TabItem Header="RX Groups">
+                                    <Grid>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="*" />
+                                            <RowDefinition Height="Auto" />
+                                        </Grid.RowDefinitions>
+                                        <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                                            <Button Content="＋ Add RX Group" Command="{Binding CodeplugEditor.AddRxGroupCommand}" Padding="8,3" Margin="0,0,4,0" />
+                                            <Button Content="✕ Delete" Command="{Binding CodeplugEditor.DeleteRxGroupCommand}" Padding="8,3" />
+                                        </StackPanel>
+                                        <DataGrid Grid.Row="1" AutoGenerateColumns="False"
+                                                  IsReadOnly="False"
+                                                  SelectedItem="{Binding CodeplugEditor.SelectedRxGroup}"
+                                                  ItemsSource="{Binding CodeplugEditor.RxGroups}">
+                                            <DataGrid.Columns>
+                                                <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="200" />
+                                                <DataGridTextColumn Header="Contacts" Binding="{Binding ContactNames.Count}" Width="80" IsReadOnly="True" />
+                                                <DataGridTextColumn Header="Contact List" Binding="{Binding ContactNames, Converter={x:Static converters:JoinConverter.Instance}}" Width="*" IsReadOnly="True" />
+                                                <DataGridTextColumn Header="Confidence" Binding="{Binding Confidence}" Width="90" IsReadOnly="True" />
+                                            </DataGrid.Columns>
+                                        </DataGrid>
+
+                                        <!-- RxGroup detail editor -->
+                                        <Border Grid.Row="2" Background="{StaticResource SubtleBrush}" CornerRadius="4" Padding="10,8" Margin="0,6,0,0"
+                                                BorderBrush="{StaticResource BorderBrush}" BorderThickness="1"
+                                                Visibility="{Binding CodeplugEditor.SelectedRxGroup, Converter={StaticResource NonEmptyVis}}">
+                                            <StackPanel>
+                                                <TextBlock Text="RX Group Properties" FontWeight="SemiBold" Foreground="{StaticResource GoldBrush}" Margin="0,0,0,6" />
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="100" />
+                                                        <ColumnDefinition Width="*" />
+                                                    </Grid.ColumnDefinitions>
+                                                    <Grid.RowDefinitions>
+                                                        <RowDefinition Height="Auto" />
+                                                        <RowDefinition Height="Auto" />
+                                                    </Grid.RowDefinitions>
+
+                                                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Name:" VerticalAlignment="Center" />
+                                                    <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding CodeplugEditor.EditRxGroupEditName, UpdateSourceTrigger=PropertyChanged}" MaxLength="16" />
+
+                                                    <TextBlock Grid.Row="1" Grid.Column="0" Text="Contacts:" VerticalAlignment="Center" Margin="0,4,0,0" />
+                                                    <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding CodeplugEditor.EditRxGroupContacts, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,0"
+                                                             ToolTip="Comma-separated contact names" />
+                                                </Grid>
+                                                <Button Content="✓ Apply Changes" Command="{Binding CodeplugEditor.ApplyRxGroupEditCommand}"
+                                                        HorizontalAlignment="Left" Margin="0,8,0,0" Padding="12,4" />
+                                            </StackPanel>
+                                        </Border>
+                                    </Grid>
+                                </TabItem>
+
+                                <!-- Settings -->
+                                <TabItem Header="Settings">
+                                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                        <StackPanel Margin="8">
+                                            <GroupBox Header="General Settings">
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="140" />
+                                                        <ColumnDefinition Width="*" />
+                                                    </Grid.ColumnDefinitions>
+                                                    <Grid.RowDefinitions>
+                                                        <RowDefinition Height="Auto" />
+                                                        <RowDefinition Height="Auto" />
+                                                        <RowDefinition Height="Auto" />
+                                                    </Grid.RowDefinitions>
+                                                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Radio Name:" FontWeight="SemiBold" VerticalAlignment="Center" />
+                                                    <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding CodeplugEditor.RadioName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" MaxLength="16" />
+                                                    <TextBlock Grid.Row="1" Grid.Column="0" Text="Intro Line 1:" FontWeight="SemiBold" Margin="0,6,0,0" VerticalAlignment="Center" />
+                                                    <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding CodeplugEditor.IntroLine1, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" MaxLength="16" Margin="0,6,0,0" />
+                                                    <TextBlock Grid.Row="2" Grid.Column="0" Text="Intro Line 2:" FontWeight="SemiBold" Margin="0,6,0,0" VerticalAlignment="Center" />
+                                                    <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding CodeplugEditor.IntroLine2, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" MaxLength="16" Margin="0,6,0,0" />
+                                                </Grid>
+                                            </GroupBox>
+                                            <GroupBox Header="Identity">
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="140" />
+                                                        <ColumnDefinition Width="*" />
+                                                    </Grid.ColumnDefinitions>
+                                                    <Grid.RowDefinitions>
+                                                        <RowDefinition Height="Auto" />
+                                                        <RowDefinition Height="Auto" />
+                                                    </Grid.RowDefinitions>
+                                                    <TextBlock Grid.Row="0" Grid.Column="0" Text="DMR ID:" FontWeight="SemiBold" VerticalAlignment="Center" />
+                                                    <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding CodeplugEditor.DmrId, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" MaxLength="8" />
+                                                    <TextBlock Grid.Row="1" Grid.Column="0" Text="Callsign:" FontWeight="SemiBold" Margin="0,6,0,0" VerticalAlignment="Center" />
+                                                    <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding CodeplugEditor.Callsign, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" MaxLength="16" Margin="0,6,0,0" />
+                                                </Grid>
+                                            </GroupBox>
+                                            <GroupBox Header="Squelch">
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="140" />
+                                                        <ColumnDefinition Width="*" />
+                                                    </Grid.ColumnDefinitions>
+                                                    <Grid.RowDefinitions>
+                                                        <RowDefinition Height="Auto" />
+                                                        <RowDefinition Height="Auto" />
+                                                    </Grid.RowDefinitions>
+                                                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Analog Level:" FontWeight="SemiBold" VerticalAlignment="Center" />
+                                                    <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding CodeplugEditor.AnalogSquelch, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" MaxLength="2" />
+                                                    <TextBlock Grid.Row="1" Grid.Column="0" Text="Digital Level:" FontWeight="SemiBold" Margin="0,6,0,0" VerticalAlignment="Center" />
+                                                    <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding CodeplugEditor.DigitalSquelch, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" MaxLength="2" Margin="0,6,0,0" />
+                                                </Grid>
+                                            </GroupBox>
+                                        </StackPanel>
+                                    </ScrollViewer>
+                                </TabItem>
+
+                                <!-- Parameters -->
+                                <TabItem Header="Parameters">
+                                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                        <StackPanel Margin="8">
+                                            <GroupBox Header="Radio Parameters">
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="160" />
+                                                        <ColumnDefinition Width="*" />
+                                                    </Grid.ColumnDefinitions>
+                                                    <Grid.RowDefinitions>
+                                                        <RowDefinition Height="Auto" />
+                                                        <RowDefinition Height="Auto" />
+                                                        <RowDefinition Height="Auto" />
+                                                        <RowDefinition Height="Auto" />
+                                                        <RowDefinition Height="Auto" />
+                                                        <RowDefinition Height="Auto" />
+                                                        <RowDefinition Height="Auto" />
+                                                        <RowDefinition Height="Auto" />
+                                                        <RowDefinition Height="Auto" />
+                                                        <RowDefinition Height="Auto" />
+                                                    </Grid.RowDefinitions>
+
+                                                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Language:" FontWeight="SemiBold" VerticalAlignment="Center" />
+                                                    <ComboBox Grid.Row="0" Grid.Column="1" ItemsSource="{Binding CodeplugEditor.LanguageValues}"
+                                                              SelectedItem="{Binding CodeplugEditor.Language, Mode=TwoWay}" />
+
+                                                    <TextBlock Grid.Row="1" Grid.Column="0" Text="Backlight Duration:" FontWeight="SemiBold" Margin="0,6,0,0" VerticalAlignment="Center" />
+                                                    <ComboBox Grid.Row="1" Grid.Column="1" ItemsSource="{Binding CodeplugEditor.BacklightDurationValues}"
+                                                              SelectedItem="{Binding CodeplugEditor.BacklightDuration, Mode=TwoWay}" Margin="0,6,0,0" />
+
+                                                    <TextBlock Grid.Row="2" Grid.Column="0" Text="Default Power:" FontWeight="SemiBold" Margin="0,6,0,0" VerticalAlignment="Center" />
+                                                    <ComboBox Grid.Row="2" Grid.Column="1" ItemsSource="{Binding CodeplugEditor.PowerLevelValues}"
+                                                              SelectedItem="{Binding CodeplugEditor.DefaultPowerLevel, Mode=TwoWay}" Margin="0,6,0,0" />
+
+                                                    <TextBlock Grid.Row="3" Grid.Column="0" Text="VOX Enabled:" FontWeight="SemiBold" Margin="0,6,0,0" VerticalAlignment="Center" />
+                                                    <CheckBox Grid.Row="3" Grid.Column="1" IsChecked="{Binding CodeplugEditor.VoxEnabled, Mode=TwoWay}" Margin="0,6,0,0" VerticalAlignment="Center" />
+
+                                                    <TextBlock Grid.Row="4" Grid.Column="0" Text="VOX Level (1-10):" FontWeight="SemiBold" Margin="0,6,0,0" VerticalAlignment="Center" />
+                                                    <TextBox Grid.Row="4" Grid.Column="1" Text="{Binding CodeplugEditor.VoxLevel, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" MaxLength="2" Margin="0,6,0,0" />
+
+                                                    <TextBlock Grid.Row="5" Grid.Column="0" Text="TX Timeout:" FontWeight="SemiBold" Margin="0,6,0,0" VerticalAlignment="Center" />
+                                                    <TextBox Grid.Row="5" Grid.Column="1" Text="{Binding CodeplugEditor.TxTimeout, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" MaxLength="3" Margin="0,6,0,0" />
+
+                                                    <TextBlock Grid.Row="6" Grid.Column="0" Text="TX Preamble Duration:" FontWeight="SemiBold" Margin="0,6,0,0" VerticalAlignment="Center" />
+                                                    <TextBox Grid.Row="6" Grid.Column="1" Text="{Binding CodeplugEditor.TxPreambleDuration, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" MaxLength="3" Margin="0,6,0,0" />
+
+                                                    <TextBlock Grid.Row="7" Grid.Column="0" Text="Mic Gain (1-10):" FontWeight="SemiBold" Margin="0,6,0,0" VerticalAlignment="Center" />
+                                                    <TextBox Grid.Row="7" Grid.Column="1" Text="{Binding CodeplugEditor.MicGain, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" MaxLength="2" Margin="0,6,0,0" />
+
+                                                    <TextBlock Grid.Row="8" Grid.Column="0" Text="CTCSS Tail Revert:" FontWeight="SemiBold" Margin="0,6,0,0" VerticalAlignment="Center" />
+                                                    <CheckBox Grid.Row="8" Grid.Column="1" IsChecked="{Binding CodeplugEditor.CtcssTailRevert, Mode=TwoWay}" Margin="0,6,0,0" VerticalAlignment="Center" />
+
+                                                    <TextBlock Grid.Row="9" Grid.Column="0" Text="Keypad Lock:" FontWeight="SemiBold" Margin="0,6,0,0" VerticalAlignment="Center" />
+                                                    <CheckBox Grid.Row="9" Grid.Column="1" IsChecked="{Binding CodeplugEditor.KeypadLockEnabled, Mode=TwoWay}" Margin="0,6,0,0" VerticalAlignment="Center" />
+                                                </Grid>
+                                            </GroupBox>
+                                        </StackPanel>
+                                    </ScrollViewer>
+                                </TabItem>
+
+                                <!-- Buttons -->
+                                <TabItem Header="Buttons">
+                                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                        <StackPanel Margin="8">
+                                            <GroupBox Header="Programmable Key Assignments">
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="120" />
+                                                        <ColumnDefinition Width="*" />
+                                                        <ColumnDefinition Width="*" />
+                                                    </Grid.ColumnDefinitions>
+                                                    <Grid.RowDefinitions>
+                                                        <RowDefinition Height="Auto" />
+                                                        <RowDefinition Height="Auto" />
+                                                        <RowDefinition Height="Auto" />
+                                                        <RowDefinition Height="Auto" />
+                                                        <RowDefinition Height="Auto" />
+                                                        <RowDefinition Height="Auto" />
+                                                        <RowDefinition Height="Auto" />
+                                                        <RowDefinition Height="Auto" />
+                                                    </Grid.RowDefinitions>
+
+                                                    <!-- Header -->
+                                                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Key" FontWeight="Bold" Margin="0,0,0,4" />
+                                                    <TextBlock Grid.Row="0" Grid.Column="1" Text="Short Press" FontWeight="Bold" Margin="4,0,0,4" />
+                                                    <TextBlock Grid.Row="0" Grid.Column="2" Text="Long Press" FontWeight="Bold" Margin="4,0,0,4" />
+
+                                                    <!-- SK1 (Side Key 1) -->
+                                                    <TextBlock Grid.Row="1" Grid.Column="0" Text="Side Key 1:" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,4,0,0" />
+                                                    <ComboBox Grid.Row="1" Grid.Column="1" ItemsSource="{Binding CodeplugEditor.KeyFunctionValues}"
+                                                              SelectedItem="{Binding CodeplugEditor.SK1Short, Mode=TwoWay}" Margin="4,4,0,0" />
+                                                    <ComboBox Grid.Row="1" Grid.Column="2" ItemsSource="{Binding CodeplugEditor.KeyFunctionValues}"
+                                                              SelectedItem="{Binding CodeplugEditor.SK1Long, Mode=TwoWay}" Margin="4,4,0,0" />
+
+                                                    <!-- SK2 (Side Key 2) -->
+                                                    <TextBlock Grid.Row="2" Grid.Column="0" Text="Side Key 2:" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,4,0,0" />
+                                                    <ComboBox Grid.Row="2" Grid.Column="1" ItemsSource="{Binding CodeplugEditor.KeyFunctionValues}"
+                                                              SelectedItem="{Binding CodeplugEditor.SK2Short, Mode=TwoWay}" Margin="4,4,0,0" />
+                                                    <ComboBox Grid.Row="2" Grid.Column="2" ItemsSource="{Binding CodeplugEditor.KeyFunctionValues}"
+                                                              SelectedItem="{Binding CodeplugEditor.SK2Long, Mode=TwoWay}" Margin="4,4,0,0" />
+
+                                                    <!-- TK (Top Key) -->
+                                                    <TextBlock Grid.Row="3" Grid.Column="0" Text="Top Key:" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,4,0,0" />
+                                                    <ComboBox Grid.Row="3" Grid.Column="1" ItemsSource="{Binding CodeplugEditor.KeyFunctionValues}"
+                                                              SelectedItem="{Binding CodeplugEditor.TKShort, Mode=TwoWay}" Margin="4,4,0,0" />
+                                                    <ComboBox Grid.Row="3" Grid.Column="2" ItemsSource="{Binding CodeplugEditor.KeyFunctionValues}"
+                                                              SelectedItem="{Binding CodeplugEditor.TKLong, Mode=TwoWay}" Margin="4,4,0,0" />
+
+                                                    <!-- P1 -->
+                                                    <TextBlock Grid.Row="4" Grid.Column="0" Text="P1:" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,4,0,0" />
+                                                    <ComboBox Grid.Row="4" Grid.Column="1" ItemsSource="{Binding CodeplugEditor.KeyFunctionValues}"
+                                                              SelectedItem="{Binding CodeplugEditor.P1Short, Mode=TwoWay}" Margin="4,4,0,0" />
+                                                    <ComboBox Grid.Row="4" Grid.Column="2" ItemsSource="{Binding CodeplugEditor.KeyFunctionValues}"
+                                                              SelectedItem="{Binding CodeplugEditor.P1Long, Mode=TwoWay}" Margin="4,4,0,0" />
+
+                                                    <!-- P2 -->
+                                                    <TextBlock Grid.Row="5" Grid.Column="0" Text="P2:" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,4,0,0" />
+                                                    <ComboBox Grid.Row="5" Grid.Column="1" ItemsSource="{Binding CodeplugEditor.KeyFunctionValues}"
+                                                              SelectedItem="{Binding CodeplugEditor.P2Short, Mode=TwoWay}" Margin="4,4,0,0" />
+                                                    <ComboBox Grid.Row="5" Grid.Column="2" ItemsSource="{Binding CodeplugEditor.KeyFunctionValues}"
+                                                              SelectedItem="{Binding CodeplugEditor.P2Long, Mode=TwoWay}" Margin="4,4,0,0" />
+
+                                                    <!-- P3 -->
+                                                    <TextBlock Grid.Row="6" Grid.Column="0" Text="P3:" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,4,0,0" />
+                                                    <ComboBox Grid.Row="6" Grid.Column="1" ItemsSource="{Binding CodeplugEditor.KeyFunctionValues}"
+                                                              SelectedItem="{Binding CodeplugEditor.P3Short, Mode=TwoWay}" Margin="4,4,0,0" />
+                                                    <ComboBox Grid.Row="6" Grid.Column="2" ItemsSource="{Binding CodeplugEditor.KeyFunctionValues}"
+                                                              SelectedItem="{Binding CodeplugEditor.P3Long, Mode=TwoWay}" Margin="4,4,0,0" />
+
+                                                    <!-- P4 -->
+                                                    <TextBlock Grid.Row="7" Grid.Column="0" Text="P4:" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,4,0,0" />
+                                                    <ComboBox Grid.Row="7" Grid.Column="1" ItemsSource="{Binding CodeplugEditor.KeyFunctionValues}"
+                                                              SelectedItem="{Binding CodeplugEditor.P4Short, Mode=TwoWay}" Margin="4,4,0,0" />
+                                                    <ComboBox Grid.Row="7" Grid.Column="2" ItemsSource="{Binding CodeplugEditor.KeyFunctionValues}"
+                                                              SelectedItem="{Binding CodeplugEditor.P4Long, Mode=TwoWay}" Margin="4,4,0,0" />
+                                                </Grid>
+                                            </GroupBox>
+                                        </StackPanel>
+                                    </ScrollViewer>
+                                </TabItem>
+                            </TabControl>
+
+                            <!-- Validation summary -->
+                            <Border Grid.Row="2" Background="#0E130E" CornerRadius="4" Padding="8,6" Margin="0,8,0,0"
+                                    BorderBrush="{StaticResource BorderBrush}" BorderThickness="1"
+                                    Visibility="{Binding CodeplugEditor.ValidationSummary, Converter={StaticResource NonEmptyVis}}">
+                                <TextBlock Text="{Binding CodeplugEditor.ValidationSummary}" TextWrapping="Wrap"
+                                           FontFamily="Consolas" FontSize="11" Foreground="{StaticResource ForegroundBrush}" />
+                            </Border>
+                        </Grid>
+                </TabItem>
+
+                <!-- ─── CSV TAB ─── -->
+                <TabItem Header="📄 CSV">
+                    <Grid Margin="0,8,0,0">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+
+                            <GroupBox Grid.Row="0" Header="CSV Import">
+                                <StackPanel>
+                                    <TextBlock TextWrapping="Wrap" FontSize="12" Foreground="{StaticResource MutedBrush}" Margin="0,0,0,8">
+                                        Select a folder containing CSV files (channels.csv, contacts.csv, zones.csv, grouplists.csv, scanlists.csv, rxgroups.csv) to import into the active codeplug editor.
+                                    </TextBlock>
+                                    <Button Content="📂 Import CSV Folder..." Command="{Binding CsvWorkspace.ImportCommand}"
+                                            HorizontalAlignment="Left" />
+                                    <TextBlock Margin="0,8,0,0" Text="{Binding CsvWorkspace.ImportSummary}" TextWrapping="Wrap" />
+                                </StackPanel>
+                            </GroupBox>
+
+                            <GroupBox Grid.Row="1" Header="CSV Export">
+                                <StackPanel>
+                                    <TextBlock TextWrapping="Wrap" FontSize="12" Foreground="{StaticResource MutedBrush}" Margin="0,0,0,8">
+                                        Export the current codeplug as a set of deterministic CSV files for version control, sharing, or external editing.
+                                    </TextBlock>
+                                    <Button Content="💾 Export CSV Folder..." Command="{Binding CsvWorkspace.ExportCommand}"
+                                            HorizontalAlignment="Left" />
+                                    <TextBlock Margin="0,8,0,0" Text="{Binding CsvWorkspace.ExportSummary}" TextWrapping="Wrap" />
+                                </StackPanel>
+                            </GroupBox>
+
+                            <GroupBox Grid.Row="2" Header="Schema Information">
+                                <TextBlock TextWrapping="Wrap" FontSize="12" Foreground="{StaticResource MutedBrush}">
+                                    Six CSV schemas are supported: channels, contacts, zones, grouplists, scanlists, and rxgroups. 
+                                    Each schema has deterministic column headers. The importer reports row-level issues and the 
+                                    exporter emits consistent UTF-8 output.
+                                </TextBlock>
+                            </GroupBox>
+
+                            <GroupBox Grid.Row="3" Header="Import Issues">
+                                <ListBox ItemsSource="{Binding CsvWorkspace.ImportIssues}"
+                                         Foreground="{StaticResource AmberBrush}"
+                                         FontFamily="Consolas" FontSize="11" />
+                            </GroupBox>
+                        </Grid>
+                </TabItem>
+                <TabItem Header="🔧 Firmware">
+                    <Grid Margin="0,8,0,0">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+                            <GroupBox Header="Analysis Source">
+                                <TextBlock Text="{Binding FirmwareAnalysis.SourceName}" TextWrapping="Wrap" FontFamily="Consolas" />
+                            </GroupBox>
+                            <GroupBox Grid.Row="1" Header="Summary">
+                                <TextBlock Text="{Binding FirmwareAnalysis.Summary}" TextWrapping="Wrap" FontFamily="Consolas" FontSize="12" />
+                            </GroupBox>
+                            <GroupBox Grid.Row="2" Header="Target Compatibility">
+                                <DockPanel LastChildFill="True">
+                                    <Button DockPanel.Dock="Right" Content="📂 Open Firmware..." Command="{Binding OpenFirmwareImageCommand}" Style="{StaticResource GhostButton}" />
+                                    <TextBlock Text="{Binding FirmwareAnalysis.CompatibilitySummary}" TextWrapping="Wrap" Margin="0,0,8,0" />
+                                </DockPanel>
+                            </GroupBox>
+                            <Grid Grid.Row="3" Margin="0,8,0,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="1.1*" />
+                                    <ColumnDefinition Width="1*" />
+                                </Grid.ColumnDefinitions>
+                                <GroupBox Header="Checksums &amp; Strings">
+                                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                        <StackPanel>
+                                            <TextBlock FontWeight="SemiBold" Text="Checksums" Foreground="{StaticResource GoldBrush}" />
+                                            <TextBlock Margin="0,4,0,12" Text="{Binding FirmwareAnalysis.Checksums}" TextWrapping="Wrap" FontFamily="Consolas" FontSize="11" />
+                                            <TextBlock FontWeight="SemiBold" Text="String Preview" Foreground="{StaticResource GoldBrush}" />
+                                            <TextBlock Margin="0,4,0,0" Text="{Binding FirmwareAnalysis.StringPreview}" TextWrapping="Wrap" FontFamily="Consolas" FontSize="11" />
+                                        </StackPanel>
+                                    </ScrollViewer>
+                                </GroupBox>
+                                <GroupBox Grid.Column="1" Margin="8,0,0,0" Header="Memory Map">
+                                    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
+                                        <TextBlock FontFamily="Consolas" FontSize="11" Text="{Binding FirmwareAnalysis.MapPreview}" TextWrapping="NoWrap" />
+                                    </ScrollViewer>
+                                </GroupBox>
+                            </Grid>
+                        </Grid>
+                </TabItem>
+                <TabItem Header="🧪 Advanced">
+                    <Grid Margin="0,8,0,0">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+                            <GroupBox Header="RE Guidance">
+                                <DockPanel LastChildFill="True">
+                                    <WrapPanel DockPanel.Dock="Right" Orientation="Horizontal" Margin="8,0,0,0" MaxWidth="980">
+                                        <Button Content="✓ Verify Image..." Command="{Binding VerifyImageCommand}" Style="{StaticResource GhostButton}" />
+                                        <Button Content="📻 Generate PNW..." Command="{Binding GeneratePnwCodeplugCommand}" Style="{StaticResource GhostButton}" />
+                                        <Button Content="📄 Analyze Capture..." Command="{Binding AnalyzeCaptureFileCommand}" Style="{StaticResource GhostButton}" />
+                                        <Button Content="🧹 Normalize Capture..." Command="{Binding NormalizeCaptureCommand}" Style="{StaticResource GhostButton}" />
+                                        <Button Content="📦 Export Radio JSON..." Command="{Binding ExportCaptureRadioJsonCommand}" Style="{StaticResource GhostButton}" />
+                                        <Button Content="📦 Export Radio BIN..." Command="{Binding ExportCaptureRadioBinCommand}" Style="{StaticResource GhostButton}" />
+                                        <Button Content="🧠 Analyze Write..." Command="{Binding AnalyzeWriteSessionCommand}" Style="{StaticResource GhostButton}" />
+                                        <Button Content="🗺 Map Write..." Command="{Binding MapWriteSessionCommand}" Style="{StaticResource GhostButton}" />
+                                        <Button Content="⇄ Diff Images..." Command="{Binding DiffImagesCommand}" Style="{StaticResource GhostButton}" />
+                                        <Button Content="🔍 Probe USB" Command="{Binding ProbeUsbPrinterCommand}" Style="{StaticResource GhostButton}" />
+                                        <Button Content="📁 Inspect CPS..." Command="{Binding InspectCpsFolderCommand}" Style="{StaticResource GhostButton}" />
+                                        <Button Content="📊 Analyze CPS..." Command="{Binding AnalyzeCpsFolderCommand}" Style="{StaticResource GhostButton}" />
+                                    </WrapPanel>
+                                    <TextBlock Text="{Binding AdvancedTools.Guidance}" TextWrapping="Wrap" FontSize="12"
+                                               Foreground="{StaticResource MutedBrush}" Margin="0,0,8,0" />
+                                </DockPanel>
+                            </GroupBox>
+                            <Grid Grid.Row="1" Margin="0,8,0,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="1*" />
+                                    <ColumnDefinition Width="1*" />
+                                </Grid.ColumnDefinitions>
+                                <GroupBox Header="Capture Analysis">
+                                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                        <TextBlock FontFamily="Consolas" FontSize="11" Text="{Binding AdvancedTools.CaptureAnalysisSummary}" TextWrapping="Wrap" />
+                                    </ScrollViewer>
+                                </GroupBox>
+                                <Grid Grid.Column="1" Margin="8,0,0,0">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="1*" />
+                                        <RowDefinition Height="1*" />
+                                    </Grid.RowDefinitions>
+                                    <GroupBox Header="Hex Diff Preview">
+                                        <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                            <TextBlock FontFamily="Consolas" FontSize="11" Text="{Binding AdvancedTools.HexDiffSummary}" TextWrapping="Wrap" />
+                                        </ScrollViewer>
+                                    </GroupBox>
+                                    <GroupBox Grid.Row="1" Margin="0,8,0,0" Header="USB Printer Probe">
+                                        <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                            <TextBlock FontFamily="Consolas" FontSize="11" Text="{Binding AdvancedTools.UsbPrinterProbeSummary}" TextWrapping="Wrap" />
+                                        </ScrollViewer>
+                                    </GroupBox>
+                                </Grid>
+                            </Grid>
+                        </Grid>
+                </TabItem>
+                <TabItem Header="📡 Trace">
+                    <Grid Margin="0,8,0,0">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+                            <DockPanel Margin="0,0,0,8">
+                                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                                    <Button Content="Export" Command="{Binding ExportTraceCommand}" Width="80" Style="{StaticResource GhostButton}" />
+                                    <Button Content="Clear" Command="{Binding ClearDiagnosticsCommand}" Width="80" />
+                                </StackPanel>
+                                <TextBlock FontWeight="SemiBold" FontSize="14" Foreground="{StaticResource ForegroundBrush}" VerticalAlignment="Center"
+                                           Text="{Binding TransportDiagnostics.Events.Count, StringFormat='Protocol Trace — {0} event(s)'}" />
+                            </DockPanel>
+                            <ListBox Grid.Row="1" ItemsSource="{Binding TransportDiagnostics.Events}"
+                                     ScrollViewer.VerticalScrollBarVisibility="Auto"
+                                     FontFamily="Consolas" FontSize="11">
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Padding="4,3" BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1">
+                                            <StackPanel>
+                                                <DockPanel>
+                                                    <TextBlock DockPanel.Dock="Right" FontSize="10"
+                                                               Foreground="{StaticResource MutedBrush}"
+                                                               Text="{Binding Timestamp, StringFormat={}{0:HH:mm:ss.fff}}" />
+                                                    <TextBlock FontSize="10" Foreground="{StaticResource GreenBrush}">
+                                                        <Run Text="{Binding Direction, Mode=OneWay}" />
+                                                        <Run Text=" " />
+                                                        <Run Text="{Binding Level, Mode=OneWay}" Foreground="{StaticResource GoldBrush}" />
+                                                    </TextBlock>
+                                                </DockPanel>
+                                                <TextBlock Text="{Binding Message}" TextWrapping="Wrap"
+                                                           Foreground="{StaticResource ForegroundBrush}" Margin="0,2,0,0" />
+                                                <TextBlock Text="{Binding Payload}" TextWrapping="Wrap"
+                                                           Foreground="{StaticResource MutedBrush}" FontSize="10" Margin="0,2,0,0"
+                                                           Visibility="{Binding Payload, Converter={StaticResource NonEmptyVis}}" />
+                                            </StackPanel>
+                                        </Border>
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+                        </Grid>
+                </TabItem>
+            </TabControl>
+            <GridSplitter Grid.Column="1" Width="4" HorizontalAlignment="Center" VerticalAlignment="Stretch"
+                          Background="{StaticResource BorderBrush}" Margin="4,8" />
+
+            <!-- ═══════════ RIGHT SIDEBAR ═══════════ -->
+            <Grid Grid.Column="2" Margin="0,8,8,8" Background="{StaticResource BackgroundBrush}">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+
+                <!-- Backup / Restore -->
+                <GroupBox Grid.Row="0" Header="Backup &amp; Restore Status">
+                    <StackPanel>
+                        <TextBlock FontWeight="SemiBold" Text="{Binding BackupRestore.StatusMessage}" TextWrapping="Wrap" />
+                        <Border Background="#0E130E" CornerRadius="4" Padding="8,6" Margin="0,8,0,0"
+                                BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+                            <StackPanel>
+                                <TextBlock Text="{Binding BackupRestore.LatestBackupSummary}" TextWrapping="Wrap" FontSize="11" />
+                                <TextBlock Margin="0,4,0,0" Foreground="{StaticResource GreenBrush}"
+                                           Text="{Binding BackupRestore.LatestBackupPath}"
+                                           TextWrapping="Wrap" FontFamily="Consolas" FontSize="10" />
+                            </StackPanel>
+                        </Border>
+                        <Border Background="#070A07" CornerRadius="4" Padding="8,6" Margin="0,8,0,0"
+                                BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+                            <StackPanel>
+                                <TextBlock Text="{Binding BackupRestore.WritePreflightSummary}" TextWrapping="Wrap"
+                                           FontWeight="SemiBold" Foreground="{StaticResource AmberBrush}" />
+                                <TextBlock Margin="0,4,0,0" Text="{Binding BackupRestore.WritePreflightDetails}"
+                                           TextWrapping="Wrap" FontFamily="Consolas" FontSize="10" Foreground="{StaticResource MutedBrush}" />
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </GroupBox>
+
+                <!-- Operation Log -->
+                <GroupBox Grid.Row="1" Header="Operation Log">
+                    <ListBox ItemsSource="{Binding LogEntries}"
+                             ScrollViewer.VerticalScrollBarVisibility="Auto"
+                             ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <Border Padding="4,4,4,6" BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1">
+                                    <StackPanel>
+                                        <DockPanel>
+                                            <TextBlock DockPanel.Dock="Right" FontSize="10"
+                                                       Foreground="{StaticResource MutedBrush}"
+                                                       Text="{Binding Timestamp, StringFormat={}{0:HH:mm:ss}}" />
+                                            <TextBlock FontSize="11" FontWeight="SemiBold"
+                                                       Foreground="{Binding Level, Converter={StaticResource LogLevelBrush}}"
+                                                       Text="{Binding Level}" />
+                                        </DockPanel>
+                                        <TextBlock TextWrapping="Wrap" FontSize="11" Foreground="{StaticResource ForegroundBrush}"
+                                                   Text="{Binding Message}" Margin="0,2,0,0" />
+                                    </StackPanel>
+                                </Border>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </GroupBox>
+            </Grid>
+        </Grid>
+
+        <!-- ═══════════ STATUS BAR ═══════════ -->
+        <Border Grid.Row="3" Background="#070A07"
+                BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,1,0,0"
+                Padding="16,5">
+            <DockPanel>
+                <TextBlock DockPanel.Dock="Right" FontSize="10" Foreground="{StaticResource MutedBrush}"
+                           FontFamily="Consolas" VerticalAlignment="Center">
+                    <Run Text="CH:" /><Run Text="{Binding CodeplugEditor.ChannelCount, Mode=OneWay}" />
+                    <Run Text=" │ Z:" /><Run Text="{Binding CodeplugEditor.ZoneCount, Mode=OneWay}" />
+                    <Run Text=" │ C:" /><Run Text="{Binding CodeplugEditor.ContactCount, Mode=OneWay}" />
+                    <Run Text=" │ GL:" /><Run Text="{Binding CodeplugEditor.GroupListCount, Mode=OneWay}" />
+                    <Run Text=" │ SL:" /><Run Text="{Binding CodeplugEditor.ScanListCount, Mode=OneWay}" />
+                    <Run Text=" │ RX:" /><Run Text="{Binding CodeplugEditor.RxGroupCount, Mode=OneWay}" />
+                </TextBlock>
+                <TextBlock FontSize="11" Foreground="{StaticResource MutedBrush}"
+                           Text="{Binding StatusBarText}" VerticalAlignment="Center" />
+            </DockPanel>
+        </Border>
+    </Grid>
+</Window>

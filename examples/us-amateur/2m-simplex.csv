@@ -1,0 +1,2 @@
+Name,ChannelType,RxFrequencyMHz,TxFrequencyMHz,Power,Bandwidth,AdmitCriteria,ReceiveOnly,ZoneNames,RxTone,TxTone,ColorCode,TimeSlot,ContactName,RxGroupName
+2M-CALL,Analog,146.5200,146.5200,Low,Wide,ChannelFree,False,,,,,,,
