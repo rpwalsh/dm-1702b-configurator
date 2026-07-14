@@ -106,4 +106,4 @@ Bao1702 is an experimental interoperability project. Its architecture and automa
 
 ## License and permitted access
 
-Copyright (c) 2026 Ryan Walsh. All rights reserved. This proprietary codebase is published solely for public viewing and professional reference; it is not open source and no permission is granted to use, copy, modify, distribute, sell, deploy, or create derivative works. See [LICENSE](LICENSE). Third-party components retain their own licenses.
+Copyright (c) 2026 Sarah Walsh. All rights reserved. This proprietary codebase is published solely for public viewing and professional reference; it is not open source and no permission is granted to use, copy, modify, distribute, sell, deploy, or create derivative works. See [LICENSE](LICENSE). Third-party components retain their own licenses.
