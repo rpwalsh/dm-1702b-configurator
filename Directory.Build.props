@@ -6,8 +6,8 @@
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
     <AnalysisLevel>latest</AnalysisLevel>
     <EnforceCodeStyleInBuild>false</EnforceCodeStyleInBuild>
-    <RepositoryUrl>https://github.com/rpwalsh/dm-1702b-configurator</RepositoryUrl>
-    <Authors>Ryan Walsh</Authors>
+    <RepositoryUrl>https://github.com/devgrrl/dm-1702b-configurator</RepositoryUrl>
+    <Authors>Sarah Walsh</Authors>
     <Company>Walsh Tech Group</Company>
   </PropertyGroup>
 </Project>

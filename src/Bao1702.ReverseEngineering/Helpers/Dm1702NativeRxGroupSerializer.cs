@@ -19,8 +19,8 @@ public static class Dm1702NativeRxGroupSerializer
     private const int RecordStride = Dm1702NativeImageAssumptions.RxGroupRecordStride; // 0x6D
     private const int NameOffset = 0x01;        // OEM-confirmed: name starts at +0x01
     private const int NameLength = 11;          // OEM-confirmed: 11 bytes, +0x01..+0x0B
-    private const int TalkGroupIdOffset = 0x0C; // OEM-confirmed: TalkGroup ID LE16 at +0x0C (ryan [TEST-GROUP-001]: 8B 03 = 907)
-    private const int MemberListOffset = 0x12;  // OEM-confirmed: first 1-based contact index at +0x12 (ryan [MO LAKES]: 90 01 = 400)
+    private const int TalkGroupIdOffset = 0x0C; // OEM-confirmed: TalkGroup ID LE16 at +0x0C (sarah [TEST-GROUP-001]: 8B 03 = 907)
+    private const int MemberListOffset = 0x12;  // OEM-confirmed: first 1-based contact index at +0x12 (sarah [MO LAKES]: 90 01 = 400)
     private const int MemberEntrySize = 3;      // LE16 + 0x00 pad; stride-3 verified
     private const int MaxMembersPerGroup = 30;  // 30 × 3 = 90 bytes, +0x12..+0x6B
 
