@@ -6,6 +6,8 @@ Bao1702 is an independently written Windows configuration and diagnostics toolki
 
 The implementation is independently written. Manufacturer software, firmware, executable code, icons, proprietary resources, and decompiled source are not distributed with this project.
 
+![Bao1702 desktop application showing codeplug editing and radio configuration](docs/screenshots/desktop.jpg)
+
 ## Supported hardware
 
 The current compatibility target is selected Baofeng DM-1702 and BF-1702B radios. Device support is deliberately conservative: an identified device must match the compatibility policy before writes are enabled. Unknown devices are read-only. Hardware behavior can vary by model revision and firmware, so manual validation on user-owned hardware remains necessary.
